@@ -23,7 +23,6 @@ import {
   getArticleSummaryPrompt,
   getOverallSummaryPrompt,
 } from '@/lib/prompts.js';
-import { SlackClient } from '@/lib/slack.js';
 
 /**
  * カスタムWorker設定
@@ -104,8 +103,6 @@ const worker = {
       { cron: controller.cron },
       'スケジュールタスクが実行されました',
     );
-
-    const slackClient = new SlackClient(env.SLACK_BOT_TOKEN);
 
     switch (controller.cron) {
       /**
@@ -258,12 +255,6 @@ const worker = {
               `記事の保存が完了しました`,
             );
           }
-
-          await slackClient.postMessage({
-            channelId: env.SLACK_CHANNEL_ID,
-            level: 'INFO',
-            message: `記事取得処理完了 ${uniqueArticles.length}件`,
-          });
         } catch (error) {
           logger.error(
             {
@@ -278,15 +269,6 @@ const worker = {
             },
             '定時記事更新処理中にエラーが発生しました',
           );
-
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          await slackClient.postMessage({
-            channelId: env.SLACK_CHANNEL_ID,
-            level: 'ERROR',
-            message: `記事取得処理エラー ${errorMessage}`,
-            channelMention: true,
-          });
         }
         break;
       }
@@ -375,12 +357,6 @@ const worker = {
             { weekStartDate: weekRange.startDate },
             '全AIエージェントの週次レポート生成処理が完了しました',
           );
-
-          await slackClient.postMessage({
-            channelId: env.SLACK_CHANNEL_ID,
-            level: 'INFO',
-            message: `週次レポート生成完了 ${weekRange.startDate}`,
-          });
           break;
         } catch (error) {
           logger.error(
@@ -396,15 +372,6 @@ const worker = {
             },
             '週次レポート生成処理中にエラーが発生しました',
           );
-
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          await slackClient.postMessage({
-            channelId: env.SLACK_CHANNEL_ID,
-            level: 'ERROR',
-            message: `週次レポート生成エラー ${errorMessage}`,
-            channelMention: true,
-          });
         }
       }
     }
